@@ -1,0 +1,16 @@
+
+ax1 = axes;
+plot((Dm(:,point)),height,'r')
+hold on
+% plot((Dm(:,point+1)),height,'--r')
+% hold on
+% plot((Dm(:,point-1)),height,'--k')
+% hold on
+set(ax1,'XAxisLocation','top')
+set(gca,'Ylim',[0 10000])
+% hold on
+ax2 = axes;
+ plot((profile(:,point)),height,'b')
+ hold on
+ set(gca,'Ylim',[0 10000])
+set(ax2,'Color','none')
