@@ -32,17 +32,18 @@ plot3(coastX,coastY,ones(1,length(coastY))*980,'k')
 %--------------------------------------axis seting------------------------------------------
 %++++++++++++++++++++++++++++++basic longitude&latitude setting
 %horizonal
-xtick=60:10:150;
-ytick=10:5:45;
-for k=1:length(xtick)
-  ylabel{k}=[xtick(k) 'N'];
-end
+xtick=100:10:150;
+ytick=0:5:45;
 for k=1:length(ytick)
-  xlabel{k}=[ytick(k) 'E'];
+  ylabel{k}=[num2str(ytick(k)) 'N'];
+end
+for k=1:length(xtick)
+  xlabel{k}=[num2str(xtick(k)) 'E'];
 end
 set(gca,'Fontsize',16,'LineWidth',2,'xlim',[xtick(1) xtick(end)],'ylim',[ytick(1) ytick(end)],...
     'Xtick',xtick,'Ytick',ytick,'XTickLabel',xlabel,'YTickLabel',ylabel,...
-    'XGrid','on','YGrid','on','ZGrid','on')
+    'XGrid','off','YGrid','off')
+end
 %vertical    
 ztick=[200 300 400 500 700 850];
 for k=1:length(ztick)
