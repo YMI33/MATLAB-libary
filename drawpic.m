@@ -43,7 +43,7 @@ end
 set(gca,'Fontsize',16,'LineWidth',2,'xlim',[xtick(1) xtick(end)],'ylim',[ytick(1) ytick(end)],...
     'Xtick',xtick,'Ytick',ytick,'XTickLabel',xlabel,'YTickLabel',ylabel,...
     'XGrid','off','YGrid','off')
-end
+
 %vertical    
 ztick=[200 300 400 500 700 850];
 for k=1:length(ztick)
