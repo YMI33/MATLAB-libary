@@ -1,0 +1,163 @@
+clear
+clc
+load('F:\postpaper\PJ\Q1test.mat')
+Q1=Q1_2000_2542_72105(24:56,:)';
+mon=8;
+q18=Q1(mon,:);
+load typh_CH.mat
+%海陆分布数据
+load coast
+
+
+
+coast.X=long;coast.Y=lat;
+ylist0(:,1)=[1988 1998 1999 1995 1987 2008];
+% ylist0(:,1)=[1988 1998 1999 1995 1987];
+ylist0(:,2)=[1984 1997 1990 1992 1986 2012];
+% ylist0(:,2)=[1984 1997 1990 1992 1986];
+%热带低压及以下-蓝绿色；热带风暴-蓝青色；强热带风暴-青色；台风-紫色；强台风-橙色；超强台风-红色；变性-深青色
+% typh_colorlist=[0 0 0;0 0 0;0 0 1;1 0 1;1 0.5 0;1 0.75 0;1 0 0;0 0 0;0 0 0;0 0 0];
+typh_colorlist=[0 0.5 1;0 0.8 0.8;0 1 1;1 0 1;1 0.5 0;1 0.75 0;1 0 0;0 0.5 1];
+colormap(typh_colorlist)
+for k=1:2
+    subplot(1,2,k)
+    plot(coast.X,coast.Y,'k')
+    ylist=ylist0(:,k)-1980;
+    hold on
+%     rectangle('position',[120,10,30,10],'EdgeColor','r')
+%按个例绘制热带风暴
+    for k1=1:length(ylist)
+       for k2=typh_year(ylist(k1),1):typh_year(ylist(k1),2)
+               %-999为终止位置
+               typh_color              =   [typh(k2).rank+1 -999];
+               typh_color(typh_color==10)= 8;
+               count_s=1;
+               while(1)
+               preset_color            =   typh_color(1);
+               count_int               =   find(typh_color~=preset_color,1,'first')-1;
+               typh_color(1:count_int) =   [];
+               
+               if(typh_color(1)==-999)
+                   break
+               end
+               
+               plot(typh(k2).X(count_s:count_s+count_int),typh(k2).Y(count_s:count_s+count_int)...
+                   ,'Marker','.','Markersize',10,'color',typh_colorlist(preset_color,:),'linewidth',1)
+               
+               count_s                 =  count_s+count_int;
+               
+               end
+               
+       end
+    end
+%     rectangle('position',[120,10,15,20],'EdgeColor','c','linewidth',2)
+    hold off
+    set(gca,'xlim',[90 160],'ylim',[0 45])
+    sum(typh_year(ylist,2)-typh_year(ylist,1)+1) 
+xtick=100:10:150;
+ytick=0:5:45;
+for k=1:length(ytick)
+  ylabel{k}=[num2str(ytick(k)) 'N'];
+end
+for k=1:length(xtick)
+  xlabel{k}=[num2str(xtick(k)) 'E'];
+end
+set(gca,'Fontsize',16,'LineWidth',1,'xlim',[xtick(1) xtick(end)],'ylim',[ytick(1) ytick(end)],...
+    'Xtick',xtick,'Ytick',ytick,'XTickLabel',xlabel,'YTickLabel',ylabel,...
+    'XGrid','off','YGrid','off')
+end
+return
+%将台风信息表汇总统计
+reso=1;
+[X Y]=meshgrid(100:reso:160,0:reso:35);
+typh_pos_list=[];
+typh_date_list=[];
+for k=1:length(typh)
+    pos=[typh(k).X;typh(k).Y]';
+    typh_pos_list=[typh_pos_list;pos];
+    typh_date_list=[typh_date_list;typh(k).date];
+end
+
+%将路径数据换算为JRA55网格点
+typh_pos_newlist=nan([size(typh_pos_list) 2]);
+for k1=1:size(X,2)
+   rowind=find(typh_pos_list(:,1)>X(1,k1)-reso/2&typh_pos_list(:,1)<X(1,k1)+reso/2);
+   p(k1)=length(rowind);
+   if isempty(rowind)
+      continue 
+   else
+      typh_pos_newlist(rowind,1,1)=X(1,k1);
+      typh_pos_newlist(rowind,1,2)=k1;
+   end
+end
+
+for k1=1:size(Y,1)
+   rowind=find(typh_pos_list(:,2)>Y(k1,1)-reso/2&typh_pos_list(:,2)<Y(k1,1)+reso/2);
+   if isempty(rowind)
+      continue 
+   else
+      typh_pos_newlist(rowind,2,1)=Y(k1,1);
+      typh_pos_newlist(rowind,2,2)=k1;
+   end
+end
+
+%计算逐年台风经过格点空间特征
+typh_count=zeros([size(X),33]);
+for k=1:33
+   nyear=k+1980;
+   ind_typh=find(typh_date_list(:,1)==nyear);
+   for k2=ind_typh'
+       ind_x=typh_pos_newlist(k2,1,2);
+       ind_y=typh_pos_newlist(k2,2,2);
+       if isnan(ind_x)|isnan(ind_y)
+          continue 
+       end
+
+       radiu_inf=8;
+       inf_x=intersect(ind_x-radiu_inf:reso:ind_x+radiu_inf,1:size(X,2));
+       inf_y=intersect(ind_y-radiu_inf:reso:ind_y+radiu_inf,1:size(Y,1));
+       inf_st=cos((inf_y-ind_y)*pi/2/radiu_inf)'*cos((inf_x-ind_x)*pi/2/radiu_inf);
+%        inf_st=1;
+       typh_count(inf_y,inf_x,k)=typh_count(inf_y,inf_x,k)+inf_st; 
+   end
+end
+
+figure
+
+for k1=1:size(typh_count,1)
+   for k2=1:size(typh_count,2)
+      typh_corr(k1,k2)=corr(squeeze(typh_count(k1,k2,:)),q18'); 
+   end
+end
+
+[WCA significance]=wcomposite(q18,typh_count,0.05);
+WCA_test=WCA;
+WCA_test(isnan(significance))=nan;
+std_typh=std(typh_count,0,3);
+std_typh(std_typh==0)=nan;
+% load precolor
+ colormap('cool')
+for k=1:2
+ subplot(1,2,k)
+ contourf(X,Y,WCA_test(:,:,k)-nanmean(typh_count,3),'LevelList',[-5:1:5],'LineStyle','none')
+ 
+ hold on
+ [c h]=contour(X,Y,WCA(:,:,k),'color','k','LevelList',[0 2 4 6 8 9 10 11 12 13 14 15]); 
+ clabel(c,h);
+ 
+ plot(coast.X,coast.Y,'-.k','linewidth',2)
+ hold off
+ set(gca,'xlim',[100 150],'ylim',[0 35],'clim',[-5 5])
+ 
+xtick=100:10:150;
+ytick=0:5:45;
+for k=1:length(ytick)
+  ylabel{k}=[num2str(ytick(k)) 'N'];
+end
+for k=1:length(xtick)
+  xlabel{k}=[num2str(xtick(k)) 'E'];
+end
+set(gca,'Fontsize',16,'LineWidth',1,'xlim',[xtick(1) xtick(end)],'ylim',[ytick(1) ytick(end)],...
+    'Xtick',xtick,'Ytick',ytick,'XTickLabel',xlabel,'YTickLabel',ylabel,...
+    'XGrid','off','YGrid','off')
+end
