@@ -60,3 +60,10 @@ set(gcf,'Paperunit','centimeters','PaperPosition',[5 5 20 15]);
 print('-dtiff','-r300','.\3Dstructure.tiff')
 %format: %03d为001
 
+%ColorBar position
+hb = colorbar('location','southoutside');
+%position: leftmost, bottom, width, height 
+set(hb,'Units','normalized', 'position', [0.2 0.1 0.6 0.05]);
+set(s1,'Units','normalized', 'position', [0.05 0.25 0.4 0.64]);
+set(s2,'Units','normalized', 'position', [0.55 0.25 0.4 0.64]);
+set(gcf,'Paperunit','centimeters','PaperPosition',[5 5 40 15]);
